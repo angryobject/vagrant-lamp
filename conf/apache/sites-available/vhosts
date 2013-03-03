@@ -1,0 +1,9 @@
+<VirtualHost *:80>
+	DocumentRoot /var/www/example.com
+  ServerName example.com
+</VirtualHost>
+
+<VirtualHost *:80>
+  DocumentRoot /var/www/example.net
+  ServerName example.net
+</VirtualHost>
