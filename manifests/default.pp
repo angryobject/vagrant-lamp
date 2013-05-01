@@ -2,6 +2,7 @@
 
 class lamp {
 
+  $ip = "192.168.50.4"
   $apache2 = ["apache2"]
   $mysql = ["mysql-server", "libapache2-mod-auth-mysql"]
   $php = ["php5", "libapache2-mod-php5", "php5-mysql", "php5-mcrypt", "php5-gd", "php5-imagick", "php5-curl", "php5-tidy"]
@@ -54,21 +55,12 @@ class lamp {
     require => Service["mysql"]
   }
 
-    # Grant mysql privileges to host os
+    # Grant mysql privileges
 
   exec { "mysql privileges":
-    command => "/usr/bin/mysql -uroot -proot -e \"GRANT ALL PRIVILEGES ON *.* TO root@'10.0.2.2' IDENTIFIED BY 'root';\"",
+    command => "/usr/bin/mysql -uroot -proot -e \"GRANT ALL PRIVILEGES ON *.* TO root@'$ip' IDENTIFIED BY 'root';\" &&
+                /usr/bin/mysql -uroot -proot -e \"GRANT ALL PRIVILEGES ON *.* TO root@'192.168.50.1' IDENTIFIED BY 'root';\"",
     require => [Service["mysql"], Exec["mysql password"]]
-  }
-
-    # Copy apache config
-
-  file { "/etc/apache2/apache2.conf":
-    ensure => present,
-    source  => "/vagrant/conf/apache/apache2.conf",
-    require => Package[$apache2],
-    notify => Service["apache2"],
-    force  => true
   }
 
     # Link apache document root to host www folder
@@ -90,6 +82,17 @@ class lamp {
     force  => true
   }
 
+  ### Default (root) vhost configuration (if needed)
+  #
+  # file { "/etc/apache2/sites-available/default":
+  #   ensure => present,
+  #   source  => "/vagrant/conf/apache/sites-available/default",
+  #   require => [Package[$apache2], File["/var/www"]],
+  #   notify => Service["apache2"],
+  #   force  => true
+  # }
+  ###
+
     # Enable virtual hosts
 
   exec { "apache vhosts":
@@ -107,10 +110,6 @@ class lamp {
     notify => Service["mysql"],
     force  => true
   }
-
-    # Copy hosts file
-
-  file { "/etc/hosts": source  => "/vagrant/conf/hosts" }
 
 }
 
